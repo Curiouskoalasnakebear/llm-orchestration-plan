@@ -63,7 +63,9 @@ LLMs hallucinate numerical data. Token counts come directly from API response he
 
 -----
 
-## Session Starter (for new sessions)
+## Session Workflow
+
+### Starting a new session
 
 Paste these two URLs at the start of any new conversation:
 
@@ -72,6 +74,26 @@ https://raw.githubusercontent.com/Curiouskoalasnakebear/llm-orchestration-plan/r
 
 https://raw.githubusercontent.com/Curiouskoalasnakebear/llm-orchestration-plan/refs/heads/main/LLM%20Systems%20—%20Concepts%20%26%20Patterns%20Learned.md
 ```
+
+### Ending a session
+
+At the end of every session Claude will:
+
+1. Update this action plan with any newly agreed steps or schemas
+1. Add any new concepts or patterns discovered to the Concepts & Learnings doc
+1. Produce both updated files for download
+1. Suggest a meaningful commit message
+
+You then:
+
+1. Open GitHub Mobile
+1. Edit and replace each file with the updated content
+1. Commit with the suggested message
+
+### What goes where
+
+- **Action Plan** — agreed decisions, schemas, architecture, implementation steps
+- **Concepts & Learnings** — any new pattern or industry term introduced during planning, following the same format: what it is → real world example → how we used it → go deeper
 
 -----
 
