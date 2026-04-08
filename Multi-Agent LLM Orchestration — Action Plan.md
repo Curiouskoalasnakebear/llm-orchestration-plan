@@ -17,6 +17,64 @@ Build a local multi-agent LLM orchestration system that:
 
 -----
 
+## Owner Context
+
+- **Hardware:** Desktop with Nvidia 3090 (24GB VRAM) for local LLM inference
+- **Planning style:** Mobile-first — most planning happens via phone in limited time windows
+- **Experience level:** Novice to intermediate — learning concepts as we go
+- **Development time:** Limited — planning is ongoing, implementation happens in focused sessions
+- **Goal:** Generic enough system to handle coding, research, writing, and analysis tasks
+
+-----
+
+## Key Decisions & Why (Architecture Decision Records)
+
+### Claude handles Tier 1 (user interaction) always
+
+Claude is the most capable model for planning, reasoning, and natural language understanding. Since it’s already on a fixed Pro plan ($20/mo), using it for the strategic layer costs nothing extra. Worker agents handle the cheaper repetitive tasks.
+
+### Local DB as shared backbone (not direct agent-to-agent communication)
+
+Agents communicating directly creates tight coupling — if one agent changes, others break. A shared DB means agents are fully independent and replaceable. This is the Actor Model pattern — agents only communicate via messages (DB rows).
+
+### LiteLLM as the model proxy
+
+Writing code that talks directly to Claude, Gemini, and Copilot APIs separately means maintaining three different integrations. LiteLLM provides one unified API — swap models by changing one parameter. Also provides cost tracking across all providers out of the box.
+
+### CrewAI for orchestration
+
+CrewAI already implements task queues, agent roles, and shared memory — approximately 80% of what we need. Building from scratch would take significantly longer. The remaining 20% (budget awareness, semantic caching, custom routing rules) gets built on top.
+
+### Postgres + pgvector (not a separate vector DB)
+
+Keeping everything in one database reduces operational complexity. pgvector adds vector search to Postgres without needing a separate service like Chroma or Qdrant. Simpler to manage, backup, and reason about.
+
+### GitHub as single source of truth for planning docs
+
+Planning happens across multiple sessions with no persistent memory between them. GitHub gives permanent, versioned storage that can be fetched at the start of any new session via raw URLs. Mobile-friendly via GitHub app for committing updates.
+
+### Instruction field kept to 1-2 sentences max
+
+Worker agents should never receive the full planning conversation as context — that would waste tokens. Claude distils the entire conversation into a succinct instruction. This is the Prompt Compression pattern — preserve meaning, minimise tokens.
+
+### DB owns budget figures, never the LLM
+
+LLMs hallucinate numerical data. Token counts come directly from API response headers — a guaranteed source of truth. Budget figures are calculated from summing immutable audit events (Event Sourcing pattern). The LLM only receives a pre-calculated status label (healthy/warning/critical) and acts on it.
+
+-----
+
+## Session Starter (for new sessions)
+
+Paste these two URLs at the start of any new conversation:
+
+```
+https://raw.githubusercontent.com/Curiouskoalasnakebear/llm-orchestration-plan/refs/heads/main/Multi-Agent%20LLM%20Orchestration%20—%20Action%20Plan.md
+
+https://raw.githubusercontent.com/Curiouskoalasnakebear/llm-orchestration-plan/refs/heads/main/LLM%20Systems%20—%20Concepts%20%26%20Patterns%20Learned.md
+```
+
+-----
+
 ## Agreed Stack
 
 |Component      |Tool                       |Purpose                                           |
